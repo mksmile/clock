@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0d1014">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>플립 탁상시계</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1014; --card:#1f242c; --card-hi:#262c35;
+    --digit:#f3efe6; --sand:#ff9346; --hinge:#0b0d10;
+    --gap:clamp(10px,2.6vmin,22px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:var(--bg);overflow:hidden;
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  body{background:radial-gradient(120% 90% at 50% 40%,#171b21 0%,var(--bg) 70%);
+    font-family:'Oswald','Roboto Condensed','Arial Narrow',sans-serif;font-weight:600}
+  .clock{position:fixed;inset:0;display:flex;flex-direction:column;gap:var(--gap);
+    padding:calc(env(safe-area-inset-top) + var(--gap)) calc(env(safe-area-inset-right) + var(--gap))
+            calc(env(safe-area-inset-bottom) + var(--gap)) calc(env(safe-area-inset-left) + var(--gap))}
+  @media (orientation:landscape){.clock{flex-direction:row}}
+
+  .card{position:relative;flex:1 1 0;min-width:0;min-height:0;container-type:size;perspective:300vmax;
+    border-radius:clamp(10px,2.4vmin,20px);
+    box-shadow:0 10px 30px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.03) inset}
+  .half{position:absolute;left:0;right:0;height:50%;overflow:hidden;background:var(--card);color:var(--digit);
+    backface-visibility:hidden;-webkit-backface-visibility:hidden}
+  .top{top:0;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0;
+    background:linear-gradient(180deg,var(--card-hi),var(--card));transform-origin:50% 100%}
+  .bot{bottom:0;border-radius:inherit;border-top-left-radius:0;border-top-right-radius:0;
+    background:linear-gradient(180deg,#1b2027,var(--card));transform-origin:50% 0}
+  .num{position:absolute;left:0;right:0;height:200%;display:flex;align-items:center;justify-content:center;
+    font-size:min(78cqh,52cqw);line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;padding-bottom:.04em}
+  .top .num{top:0} .bot .num{bottom:0}
+  .flip::after{content:"";position:absolute;left:0;right:0;top:50%;height:max(2px,.6cqh);transform:translateY(-50%);
+    background:var(--hinge);z-index:5;box-shadow:0 1px 0 rgba(255,255,255,.04)}
+  .flip::before{content:"";position:absolute;top:50%;left:0;right:0;height:max(6px,3cqh);transform:translateY(-50%);
+    z-index:6;pointer-events:none;
+    background:radial-gradient(circle at 0 50%,var(--bg) 0 max(3px,1.4cqh),transparent calc(max(3px,1.4cqh) + 1px)),
+               radial-gradient(circle at 100% 50%,var(--bg) 0 max(3px,1.4cqh),transparent calc(max(3px,1.4cqh) + 1px))}
+  .flap{z-index:3;display:none}
+  .card.flipping .flap{display:block}
+  .flap.top{animation:flipTop .28s ease-in forwards}
+  .flap.bot{transform:rotateX(90deg);animation:flipBot .28s .28s ease-out forwards}
+  .flap.top::after,.flap.bot::after{content:"";position:absolute;inset:0;pointer-events:none}
+  .flap.top::after{background:linear-gradient(180deg,transparent,rgba(0,0,0,.35));animation:shadeIn .28s ease-in forwards;opacity:0}
+  .flap.bot::after{background:linear-gradient(0deg,transparent,rgba(0,0,0,.35));animation:shadeOut .28s .28s ease-out forwards;opacity:1}
+  @keyframes flipTop{from{transform:rotateX(0)}to{transform:rotateX(-90deg)}}
+  @keyframes flipBot{from{transform:rotateX(90deg)}to{transform:rotateX(0)}}
+  @keyframes shadeIn{to{opacity:1}} @keyframes shadeOut{to{opacity:0}}
+
+  /* 모래시계 카드 */
+  .glass-card{background:linear-gradient(180deg,var(--card-hi),var(--card) 55%,#1b2027);
+    display:flex;align-items:center;justify-content:center}
+  .glass-card svg{width:100%;height:100%;padding:7cqh 0;overflow:visible}
+  #stream{animation:fall .35s linear infinite}
+  @keyframes fall{to{stroke-dashoffset:-5}}
+
+  #start{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;
+    padding:0 20px calc(env(safe-area-inset-bottom) + 28px);
+    background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.72));transition:opacity .4s}
+  #start.hide{opacity:0;pointer-events:none}
+  #start .pill{font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;font-weight:500;
+    color:#fff;background:rgba(255,147,70,.95);border-radius:999px;padding:14px 22px;font-size:16px;text-align:center;
+    line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  #start .pill small{display:block;font-size:12.5px;opacity:.85;font-weight:400}
+  #status{position:fixed;z-index:15;right:calc(env(safe-area-inset-right) + 14px);bottom:calc(env(safe-area-inset-bottom) + 10px);
+    font:500 11px system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;color:rgba(255,255,255,.5);
+    transition:opacity 1s;opacity:0;pointer-events:none}
+  #status.show{opacity:1}
+  video{position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:-10px;top:-10px}
+</style>
+</head>
+<body>
+<div class="clock" id="clock">
+  <div class="card flip" id="h"></div>
+  <div class="card flip" id="m"></div>
+  <div class="card glass-card">
+    <svg viewBox="0 0 100 160" preserveAspectRatio="xMidYMid meet" aria-label="1분 모래시계">
+      <defs>
+        <clipPath id="glassClip"><path id="glassPath"
+          d="M30,16 C30,50 46,68 47.5,80 C46,92 30,110 30,144 L70,144 C70,110 54,92 52.5,80 C54,68 70,50 70,16 Z"/></clipPath>
+        <clipPath id="topClip"><rect x="0" y="0" width="100" height="80"/></clipPath>
+        <clipPath id="botClip"><rect x="0" y="80" width="100" height="80"/></clipPath>
+        <linearGradient id="sandG" x1="0" x2="1">
+          <stop offset="0" stop-color="#e07a30"/><stop offset=".5" stop-color="#ff9a4f"/><stop offset="1" stop-color="#e07a30"/>
+        </linearGradient>
+        <linearGradient id="woodG" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#f3efe6"/><stop offset="1" stop-color="#cfc8ba"/>
+        </linearGradient>
+      </defs>
+      <g id="hg">
+        <!-- 유리 안쪽 -->
+        <use href="#glassPath" fill="rgba(255,255,255,.035)"/>
+        <g clip-path="url(#glassClip)">
+          <g clip-path="url(#topClip)"><path id="sandTop" fill="url(#sandG)"/></g>
+          <g clip-path="url(#botClip)"><path id="sandBot" fill="url(#sandG)"/></g>
+          <line id="stream" x1="50" y1="80" x2="50" y2="140" stroke="#ff9346" stroke-width="1.3"
+                stroke-dasharray="2.2 2.8" stroke-linecap="round"/>
+        </g>
+        <!-- 유리 테두리와 하이라이트 -->
+        <use href="#glassPath" fill="none" stroke="rgba(243,239,230,.55)" stroke-width="1.4"/>
+        <path d="M35,22 C35,44 42,60 45,70" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M35,138 C35,118 41,102 44.5,92" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- 기둥과 받침 -->
+        <rect x="21" y="12" width="3.2" height="136" rx="1.6" fill="url(#woodG)" opacity=".85"/>
+        <rect x="75.8" y="12" width="3.2" height="136" rx="1.6" fill="url(#woodG)" opacity=".85"/>
+        <rect x="15" y="5" width="70" height="9" rx="3" fill="url(#woodG)"/>
+        <rect x="15" y="146" width="70" height="9" rx="3" fill="url(#woodG)"/>
+      </g>
+    </svg>
+  </div>
+</div>
+<div id="start"><div class="pill">화면을 탭하면 시작해요<small>전체화면 · 화면 꺼짐 방지</small></div></div>
+<div id="status"></div>
+<video id="ns" muted playsinline loop preload="auto" src="data:video/mp4;base64,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aHJvbWFfbWU9MSB0cmVsbGlzPTAgOHg4ZGN0PTEgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9MCB0aHJlYWRzPTEgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTEga2V5aW50PTI1MCBrZXlpbnRfbWluPTEgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD0xMCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAASZYiEABb/7H/CVX/RApEebX/xARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcAAAAIQZohGIK//vABGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBw=="></video>
+<script>
+(function(){
+  /* ---------- 시·분 플립 카드 ---------- */
+  const cards = {h:document.getElementById('h'), m:document.getElementById('m')};
+  const state = {};
+  function build(el){
+    el.innerHTML =
+      '<div class="half top st"><div class="num"></div></div>'+
+      '<div class="half bot sb"><div class="num"></div></div>'+
+      '<div class="half top flap ft"><div class="num"></div></div>'+
+      '<div class="half bot flap fb"><div class="num"></div></div>';
+    return {st:el.querySelector('.st .num'), sb:el.querySelector('.sb .num'),
+            ft:el.querySelector('.ft .num'), fb:el.querySelector('.fb .num'), timer:0, val:null};
+  }
+  for (const k in cards) state[k] = build(cards[k]);
+  function setCard(k, v){
+    const c = state[k], el = cards[k];
+    if (c.val === v) return;
+    const old = c.val; c.val = v;
+    if (old === null || document.hidden){
+      c.st.textContent = c.sb.textContent = c.ft.textContent = c.fb.textContent = v; return;
+    }
+    clearTimeout(c.timer);
+    c.st.textContent = v; c.sb.textContent = old; c.ft.textContent = old; c.fb.textContent = v;
+    el.classList.remove('flipping'); void el.offsetWidth; el.classList.add('flipping');
+    c.timer = setTimeout(()=>{ c.sb.textContent = v; el.classList.remove('flipping'); }, 600);
+  }
+  const p2 = n => String(n).padStart(2,'0');
+  function tick(){
+    const d = new Date();
+    setCard('h', p2(d.getHours()));
+    setCard('m', p2(d.getMinutes()));
+    setTimeout(tick, 1000 - d.getMilliseconds() + 5);
+  }
+  tick();
+
+  /* ---------- 모래시계 (1분) ---------- */
+  const hg = document.getElementById('hg');
+  const sandTop = document.getElementById('sandTop');
+  const sandBot = document.getElementById('sandBot');
+  const stream = document.getElementById('stream');
+  const NECK = 80, TOP_H = 54, BOT_BASE = 144, BOT_H = 50;
+  const TURN = 900;           // 0~0.9초: 뒤집기
+  const DRAIN = 60000 - 1000; // 1초~60초: 모래가 흐름
+  const ease = t => t<.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+
+  function drawSand(r){ // r = 위쪽에 남은 모래 비율 (1 → 0)
+    // 위쪽: 깔때기 모양이라 높이 ∝ √부피
+    const ht = TOP_H * Math.sqrt(Math.max(r,0));
+    if (ht < .3){ sandTop.setAttribute('d',''); }
+    else {
+      const y = NECK - ht, dip = Math.min(5, ht*.5);
+      sandTop.setAttribute('d', `M0,${y} Q50,${y+dip*2} 100,${y} L100,${NECK} L0,${NECK} Z`);
+    }
+    // 아래쪽: 바닥에서부터 쌓임, 가운데가 볼록
+    const f = 1 - r;
+    const hb = BOT_H * (1 - Math.sqrt(Math.max(1-f,0)));
+    if (hb < .2){ sandBot.setAttribute('d',''); }
+    else {
+      const y = BOT_BASE - hb, peak = Math.min(6, hb*.6);
+      sandBot.setAttribute('d', `M0,${y+peak*.4} Q50,${y-peak} 100,${y+peak*.4} L100,160 L0,160 Z`);
+    }
+    return BOT_BASE - hb;
+  }
+
+  function frame(){
+    const now = new Date();
+    const ms = now.getSeconds()*1000 + now.getMilliseconds();
+    let angle = 0, r, flowing = false;
+    if (ms < TURN){                 // 뒤집는 중: 아래가 가득 찬 상태로 180° 회전
+      angle = 180 * ease(ms / TURN);
+      r = 0;
+    } else if (ms < 1000){          // 뒤집기 완료 → 위가 가득
+      r = 1;
+    } else {
+      r = 1 - (ms - 1000) / DRAIN;
+      flowing = true;
+    }
+    if (angle > 0){
+      hg.setAttribute('transform', `rotate(${angle} 50 80)`);
+      r = 0;
+    } else hg.removeAttribute('transform');
+    const surface = drawSand(r);
+    if (flowing && r > 0.003){
+      stream.style.display = '';
+      stream.setAttribute('y2', Math.max(NECK+1, surface - 2));
+    } else stream.style.display = 'none';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ---------- 화면 꺼짐 방지 ---------- */
+  const statusEl = document.getElementById('status');
+  let statusTimer;
+  function status(msg){
+    statusEl.textContent = msg; statusEl.classList.add('show');
+    clearTimeout(statusTimer); statusTimer = setTimeout(()=>statusEl.classList.remove('show'), 3500);
+  }
+  let lock = null, wanted = false;
+  const video = document.getElementById('ns');
+  async function keepAwake(){
+    let ok = false, why = '';
+    if (!('wakeLock' in navigator)) why = '이 브라우저는 화면 꺼짐 방지 미지원';
+    else {
+      try{
+        if (!lock || lock.released){
+          lock = await navigator.wakeLock.request('screen');
+          lock.addEventListener('release', ()=>{ lock = null; });
+        }
+        ok = true;
+      }catch(e){ why = (e && e.name ? e.name : '') + ' — 꺼짐 방지가 거부됨'; }
+    }
+    if (!ok){ try{ await video.play(); }catch(e){} }
+    status(ok ? '화면 꺼짐 방지 켜짐' : why);
+    return ok;
+  }
+  async function goFull(){
+    const de = document.documentElement;
+    try{
+      if (!document.fullscreenElement && !document.webkitFullscreenElement){
+        if (de.requestFullscreen) await de.requestFullscreen({navigationUI:'hide'});
+        else if (de.webkitRequestFullscreen) de.webkitRequestFullscreen();
+      }
+    }catch(e){}
+  }
+  const startEl = document.getElementById('start');
+  startEl.addEventListener('click', ()=>{ wanted = true; startEl.classList.add('hide'); goFull(); keepAwake(); });
+  document.getElementById('clock').addEventListener('click', ()=>{ if (wanted){ goFull(); keepAwake(); } });
+  document.addEventListener('visibilitychange', ()=>{
+    if (document.visibilityState === 'visible'){
+      if (wanted) keepAwake();
+      for (const k in state) state[k].val = null;
+    }
+  });
+})();
+</script>
+</body>
+</html>
