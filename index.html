@@ -212,6 +212,18 @@
           <g clip-path="url(#topClip)"><path id="sandTopHi" fill="url(#sandTopShade)"/></g>
           <path id="stream" fill="none" stroke="#c98a4a" stroke-width=".75" stroke-linecap="round"
                 stroke-dasharray=".9 .5 .6 .7" />
+          <g id="fx" fill="none" stroke-linecap="round">
+            <path id="fxCore" stroke="#b97a40" stroke-width=".28" opacity=".55"/>
+            <path id="fxHole" fill="#4a2c14" stroke="none" opacity=".7"/>
+            <path id="fxSlide" stroke="#f2c58c" stroke-width=".5"/>
+            <path id="fxSlide2" stroke="#8a5528" stroke-width=".45"/>
+            <path id="fxRoll" stroke="#f0c088" stroke-width=".5"/>
+            <path id="fxRoll2" stroke="#7a4a22" stroke-width=".45"/>
+            <path id="fxFall" stroke="#f3c890" stroke-width=".42"/>
+            <path id="fxFall2" stroke="#a86a34" stroke-width=".36"/>
+            <path id="fxSplash" stroke="#e6aa66" stroke-width=".38"/>
+            <circle id="fxNeck" cx="50" cy="85.6" r=".75" fill="#c98a4a"/>
+          </g>
         </g>
         <!-- 유리 두께감: 바깥 어두운 테 + 밝은 테 -->
         <path class="gpath" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="2.4"/>
@@ -393,15 +405,16 @@
       const dip = Math.min(depth * .9, 3 + (1 - r) * 9);
       const d = `M0,${y} C28,${y} 40,${y + dip*.55} 50,${y + dip} C60,${y + dip*.55} 72,${y} 100,${y} L100,${NECK} L0,${NECK} Z`;
       sandTop.setAttribute('d', d); sandTopHi.setAttribute('d', d);
+      SURF.topY = y; SURF.dip = dip;
     }
     // 아래쪽 모래: 원뿔 모양으로 쌓임
     const f = 1 - r;
-    let peakY = 156;
+    let peakY = 156; SURF.botY = 156; SURF.k = 0;
     if (f <= 0.002){ sandBot.setAttribute('d',''); }
     else {
       const y = levelFor(botCum, VMAX * f);
       const k = Math.min(8, 1.2 + (158 - y) * .45);
-      peakY = y - k * .75;
+      peakY = y - k * .75; SURF.botY = y; SURF.k = k;
       sandBot.setAttribute('d',
         `M0,${y + k*.35} C26,${y + k*.3} 40,${peakY + 1.2} 50,${peakY} C60,${peakY + 1.2} 74,${y + k*.3} 100,${y + k*.35} L100,175 L0,175 Z`);
     }
@@ -423,6 +436,111 @@
   }
 
   /* ---------- 화면 그리기 ---------- */
+
+  /* ---------- 타이머용: 진짜 모래가 떨어지는 효과 ---------- */
+  const SURF = {topY:40, dip:3, botY:156, k:0};
+  const fxEl = {}; ['fx','fxCore','fxHole','fxSlide','fxSlide2','fxRoll','fxRoll2','fxFall','fxFall2','fxSplash','fxNeck']
+    .forEach(id => fxEl[id] = document.getElementById(id));
+  const halfW = y => { const i = Math.max(0, Math.min(nb - 1, Math.round((y - Y0) / STEP))); return Math.sqrt(r2[i]); };
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const falls = [], splashes = [], slides = [], rolls = [];
+  let fxLast = 0, fxOn = false;
+  const G = 520;           // 중력 (viewBox 단위/초²)
+  const dot = (x, y) => `M${x.toFixed(2)},${y.toFixed(2)}l0,.01`;
+  function clearFx(){
+    if (!fxOn) return;
+    fxOn = false; falls.length = splashes.length = slides.length = rolls.length = 0;
+    fxEl.fx.style.display = 'none';
+  }
+  function updateFx(now, peak){
+    if (!fxOn){ fxOn = true; fxLast = now; fxEl.fx.style.display = ''; }
+    const dt = Math.min(.05, (now - fxLast) / 1000); fxLast = now;
+    const land = peak + .3;
+
+    // 1) 목에서 떨어지는 알갱이: 아래로 갈수록 빨라짐
+    let n = Math.random() < .5 ? 2 : 3;
+    for (let i = 0; i < n; i++) falls.push({x: 50 + rnd(-.3, .3), y: 86 + rnd(0, 1.5), vx: rnd(-.6, .6), vy: rnd(10, 30), c: Math.random() < .65});
+    let a = '', b = '';
+    for (let i = falls.length - 1; i >= 0; i--){
+      const g = falls[i];
+      g.vy += G * dt; g.y += g.vy * dt; g.x += g.vx * dt;
+      if (g.y >= land){
+        if (Math.random() < .35){
+          const dir = Math.random() < .5 ? -1 : 1;
+          splashes.push({x: g.x, y: land - .2, vx: dir * rnd(6, 22), vy: -rnd(8, 26), life: rnd(.15, .32)});
+        }
+        if (Math.random() < .18) spawnRoll();
+        falls.splice(i, 1); continue;
+      }
+      const len = Math.min(3.2, g.vy * .016);          // 속도만큼 늘어나는 잔상
+      const s = `M${g.x.toFixed(2)},${g.y.toFixed(2)}l0,${(-len).toFixed(2)}`;
+      if (g.c) a += s; else b += s;
+    }
+    fxEl.fxFall.setAttribute('d', a); fxEl.fxFall2.setAttribute('d', b);
+
+    // 2) 떨어진 자리에서 튀는 알갱이
+    let s3 = '';
+    for (let i = splashes.length - 1; i >= 0; i--){
+      const p = splashes[i];
+      p.life -= dt; if (p.life <= 0){ splashes.splice(i, 1); continue; }
+      p.vy += G * .9 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.y > land + 2){ splashes.splice(i, 1); continue; }
+      s3 += dot(p.x, p.y);
+    }
+    fxEl.fxSplash.setAttribute('d', s3);
+
+    // 3) 위쪽: 깔때기 경사를 따라 가운데로 미끄러져 들어가는 알갱이
+    const topY = SURF.topY, holeY = topY + SURF.dip, wt = halfW(topY + .5) * .92;
+    if (wt > 1.5 && slides.length < 26 && Math.random() < .55){
+      const side = Math.random() < .5 ? -1 : 1;
+      slides.push({side, p: 0, from: rnd(.25, 1), spd: rnd(.35, .9), c: Math.random() < .6});
+    }
+    let t1 = '', t2 = '';
+    for (let i = slides.length - 1; i >= 0; i--){
+      const q = slides[i];
+      q.p += q.spd * dt * (1 + q.p * 1.8);            // 가운데로 갈수록 빨라짐
+      if (q.p >= 1){ slides.splice(i, 1); continue; }
+      const u = q.from * (1 - q.p);                    // 1=가장자리, 0=구멍
+      const x = 50 + q.side * wt * u;
+      const y = holeY - SURF.dip * (1 - Math.pow(1 - u, 2)) * (u > 0 ? 1 : 0) + .15;
+      const yy = topY + SURF.dip * Math.pow(1 - u, 1.6) + .35;
+      if (q.c) t1 += dot(x, Math.min(yy, holeY)); else t2 += dot(x, Math.min(yy, holeY));
+    }
+    fxEl.fxSlide.setAttribute('d', t1); fxEl.fxSlide2.setAttribute('d', t2);
+    // 깔때기 구멍 (모래가 빨려 들어가는 곳)
+    if (wt > 1.5){
+      const hw = .9 + Math.sin(now / 70) * .15;
+      fxEl.fxHole.setAttribute('d', `M${50 - hw},${holeY - .1} Q50,${holeY + .9} ${50 + hw},${holeY - .1} Q50,${holeY + .3} ${50 - hw},${holeY - .1}Z`);
+    } else fxEl.fxHole.setAttribute('d', '');
+
+    // 4) 아래쪽: 봉우리에서 경사를 따라 굴러 내려가는 알갱이
+    if (Math.random() < .25) spawnRoll();
+    let r1 = '', r2s = '';
+    const k = SURF.k, by = SURF.botY;
+    const wb = halfW(by + k * .3) * .9;
+    for (let i = rolls.length - 1; i >= 0; i--){
+      const q = rolls[i];
+      q.p += q.spd * dt;
+      if (q.p >= q.stop){ rolls.splice(i, 1); continue; }
+      const e = 1 - Math.pow(1 - q.p, 2);               // 점점 느려짐
+      const x = 50 + q.side * wb * e;
+      const y = peak + (by + k * .33 - peak) * Math.pow(e, .7) - .25;
+      if (q.c) r1 += dot(x, y); else r2s += dot(x, y);
+    }
+    fxEl.fxRoll.setAttribute('d', r1); fxEl.fxRoll2.setAttribute('d', r2s);
+
+    // 5) 가는 모래 줄기 (알갱이 사이의 연속된 흐름)
+    const jit = Math.sin(now / 37) * .08 + Math.sin(now / 13) * .05;
+    fxEl.fxCore.setAttribute('d', `M50,85.5 Q${50 + jit},${(85 + land) / 2} ${50 + jit * .5},${land}`);
+    fxEl.fxCore.setAttribute('stroke-width', (.22 + Math.random() * .12).toFixed(2));
+    fxEl.fxNeck.setAttribute('r', (.65 + Math.random() * .2).toFixed(2));
+  }
+  function spawnRoll(){
+    if (rolls.length > 22 || SURF.k < 1.5) return;
+    rolls.push({side: Math.random() < .5 ? -1 : 1, p: 0, stop: rnd(.35, 1), spd: rnd(.8, 1.8), c: Math.random() < .6});
+  }
+  fxEl.fx.style.display = 'none';
+
   function frame(){
     const nowD = new Date(), now = nowD.getTime();
     let angle = 0, r = 0, flowing = false, ms = 0;
@@ -452,7 +570,9 @@
     else hg.removeAttribute('transform');
     r = Math.max(0, Math.min(1, r));
     const peak = drawSand(r);
-    if (flowing && r > 0.004){
+    const fancy = mode === 'timer' && flowing && r > 0.004;
+    if (fancy) updateFx(performance.now(), peak); else clearFx();
+    if (flowing && r > 0.004 && !fancy){
       const w = Math.sin(ms / 90) * .12;
       stream.setAttribute('d', `M50,85 Q${50 + w},${(85 + peak) / 2} 50,${peak + .5}`);
       stream.setAttribute('stroke-dashoffset', -(ms / 40) % 2.7);
