@@ -60,6 +60,80 @@
     display:flex;align-items:center;justify-content:center}
   .glass-card svg{width:100%;height:100%;padding:5cqh 0;overflow:visible}
   
+
+  /* ---------- 공통 버튼 ---------- */
+  .ui{transition:opacity .5s}
+  body.calm .ui{opacity:0;pointer-events:none}
+  .fbtn{position:fixed;z-index:12;display:flex;align-items:center;gap:7px;
+    font:600 14px system-ui,-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#f3efe6;
+    background:rgba(20,24,30,.72);border:1px solid rgba(255,255,255,.12);border-radius:999px;
+    padding:9px 14px;white-space:nowrap;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer}
+  .fbtn svg{width:18px;height:18px;flex:none}
+  .fbtn:active{transform:scale(.96)}
+  .fbtn.accent{background:rgba(255,147,70,.92);border-color:transparent;color:#1a1208}
+  #toTimer{top:calc(env(safe-area-inset-top) + 14px);right:calc(env(safe-area-inset-right) + 14px)}
+  #toClock{top:calc(env(safe-area-inset-top) + 14px);left:calc(env(safe-area-inset-left) + 14px)}
+  #toSetup{top:calc(env(safe-area-inset-top) + 14px);right:calc(env(safe-area-inset-right) + 14px)}
+  #tbar{position:fixed;z-index:12;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 18px);
+    display:flex;gap:12px;width:max-content}
+  #tbar .fbtn{position:static;padding:12px 20px;font-size:15px}
+  body:not(.timer) .tonly, body.timer .conly{display:none !important}
+
+  /* 카드 라벨 (타이머 화면) */
+  .lab{position:absolute;z-index:8;left:4.5cqw;bottom:4cqh;font:600 max(12px,4.5cqh) system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;
+    color:rgba(243,239,230,.38);display:none}
+  /* ---------- 타이머 화면: 모래시계 크게, 시간은 작게 ---------- */
+  body.timer #h, body.timer #m{display:none}
+  body.timer .clock{flex-direction:column;gap:6px;
+    padding-bottom:calc(env(safe-area-inset-bottom) + 10px)}
+  body.timer .glass-card{background:none;box-shadow:none}
+  body.timer .glass-card svg{padding:1.5cqh 0}
+  #tdisp{display:none;flex:none;text-align:center;color:var(--digit);
+    font:600 30px/1.2 'Oswald','Roboto Condensed',sans-serif;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+  body.timer #tdisp{display:block}
+  #tTot{color:rgba(243,239,230,.45)}
+  body.timer.paused #tRem{opacity:.5}
+  body.timer #tbar{bottom:calc(env(safe-area-inset-bottom) + 58px)}
+  @media (orientation:landscape){ body.timer #tbar{left:auto;transform:none;right:calc(env(safe-area-inset-right) + 14px);bottom:calc(env(safe-area-inset-bottom) + 14px)} }
+
+  /* ---------- 설정 패널 ---------- */
+  .sheet{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+    background:rgba(5,7,10,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px)}
+  .sheet[hidden]{display:none}
+  .panel{width:min(420px,100%);max-height:100%;overflow:auto;background:#1a1f26;border:1px solid rgba(255,255,255,.08);
+    border-radius:22px;padding:22px 20px 20px;box-shadow:0 20px 60px rgba(0,0,0,.6);
+    font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;color:#f3efe6}
+  .panel h2{font-size:18px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+  .panel h2 button{background:none;border:0;color:rgba(243,239,230,.55);font-size:14px;cursor:pointer;padding:4px}
+  .presets{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .presets button{font:600 18px 'Oswald',system-ui,sans-serif;color:#f3efe6;background:#252b34;border:1px solid rgba(255,255,255,.07);
+    border-radius:14px;padding:14px 0;cursor:pointer}
+  .presets button small{font:500 12px system-ui,'Apple SD Gothic Neo',sans-serif;margin-left:2px;opacity:.7}
+  .presets button.on{background:#ff9346;color:#1a1208;border-color:transparent}
+  .custom{margin-top:18px}
+  .custom label{display:block;font-size:13px;color:rgba(243,239,230,.6);margin-bottom:8px}
+  .stepper{display:flex;align-items:center;gap:10px}
+  .stepper button{width:52px;height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:#252b34;color:#f3efe6;
+    font-size:24px;cursor:pointer;flex:none}
+  .stepper .field{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:52px;border-radius:14px;background:#0f1318;
+    border:1px solid rgba(255,255,255,.1)}
+  .stepper input{width:3.2em;background:none;border:0;outline:0;color:#f3efe6;text-align:right;font:600 26px 'Oswald',system-ui,sans-serif;
+    -moz-appearance:textfield}
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .stepper .field span{font-size:15px;color:rgba(243,239,230,.6)}
+  .hint{font-size:12px;color:rgba(243,239,230,.45);margin-top:8px}
+  .go{margin-top:20px;width:100%;height:56px;border:0;border-radius:16px;background:#ff9346;color:#1a1208;
+    font:700 18px system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;cursor:pointer}
+  .go:active,.presets button:active,.stepper button:active{transform:scale(.97)}
+
+  /* ---------- 완료 알림 ---------- */
+  #done .panel{text-align:center}
+  #done .big{font:600 44px 'Oswald',system-ui,sans-serif;color:#ff9346;margin:6px 0 4px}
+  #done p{color:rgba(243,239,230,.7);font-size:15px}
+  body.ringing .clock{animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{50%{filter:brightness(1.6)}}
+
   #start{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;
     padding:0 20px calc(env(safe-area-inset-bottom) + 28px);
     background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.72));transition:opacity .4s}
@@ -68,7 +142,7 @@
     color:#fff;background:rgba(255,147,70,.95);border-radius:999px;padding:14px 22px;font-size:16px;text-align:center;
     line-height:1.4;box-shadow:0 8px 24px rgba(0,0,0,.4)}
   #start .pill small{display:block;font-size:12.5px;opacity:.85;font-weight:400}
-  #status{position:fixed;z-index:15;right:calc(env(safe-area-inset-right) + 14px);bottom:calc(env(safe-area-inset-bottom) + 10px);
+  #status{position:fixed;z-index:15;left:50%;transform:translateX(-50%);white-space:nowrap;top:calc(env(safe-area-inset-top) + 24px);
     font:500 11px system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;color:rgba(255,255,255,.5);
     transition:opacity 1s;opacity:0;pointer-events:none}
   #status.show{opacity:1}
@@ -79,7 +153,7 @@
 <div class="clock" id="clock">
   <div class="card flip" id="h"></div>
   <div class="card flip" id="m"></div>
-  <div class="card glass-card">
+  <div class="card glass-card" id="g">
     <svg viewBox="0 0 100 172" preserveAspectRatio="xMidYMid meet" aria-label="1분 모래시계">
       <defs>
         <clipPath id="glassClip"><path id="glassIn"/></clipPath>
@@ -162,25 +236,91 @@
       </g>
     </svg>
   </div>
+  <div id="tdisp" class="ui"><span id="tRem">05:00</span><span id="tTot"> / 05:00</span></div>
 </div>
-<div id="start"><div class="pill">화면을 탭하면 시작해요<small>전체화면 · 화면 꺼짐 방지</small></div></div>
+
+<!-- 시계 화면 버튼 -->
+<button class="fbtn ui conly" id="toTimer" type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M7 2c0 5 10 7 10 10S7 17 7 22M17 2c0 5-10 7-10 10s10 5 10 10"/></svg>
+  <span id="toTimerTxt">타이머</span>
+</button>
+<!-- 타이머 화면 버튼 -->
+<button class="fbtn ui tonly" id="toClock" type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+  <span>시계</span>
+</button>
+<button class="fbtn ui tonly" id="toSetup" type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+  <span>시간 설정</span>
+</button>
+<div id="tbar" class="ui tonly">
+  <button class="fbtn" id="resetBtn" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    <span>처음으로</span>
+  </button>
+  <button class="fbtn accent" id="playBtn" type="button">
+    <svg id="icoPause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+    <svg id="icoPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
+    <span id="playTxt">시작</span>
+  </button>
+</div>
+
+<!-- 타이머 설정 -->
+<div class="sheet" id="setup" hidden>
+  <div class="panel">
+    <h2>타이머 설정 <button type="button" id="setupClose">닫기</button></h2>
+    <div class="presets" id="presets">
+      <button type="button" data-m="3">3<small>분</small></button>
+      <button type="button" data-m="5">5<small>분</small></button>
+      <button type="button" data-m="10">10<small>분</small></button>
+      <button type="button" data-m="30">30<small>분</small></button>
+      <button type="button" data-m="45">45<small>분</small></button>
+      <button type="button" data-m="60">60<small>분</small></button>
+    </div>
+    <div class="custom">
+      <label for="minIn">직접 입력</label>
+      <div class="stepper">
+        <button type="button" id="minDown" aria-label="1분 줄이기">−</button>
+        <div class="field"><input id="minIn" type="number" inputmode="numeric" min="1" max="99" value="5"><span>분</span></div>
+        <button type="button" id="minUp" aria-label="1분 늘리기">＋</button>
+      </div>
+      <div class="hint">1~99분까지 설정할 수 있어요.</div>
+    </div>
+    <button type="button" class="go" id="goBtn">시작</button>
+  </div>
+</div>
+
+<!-- 완료 -->
+<div class="sheet" id="done" hidden>
+  <div class="panel">
+    <h2 style="justify-content:center">타이머 종료</h2>
+    <div class="big" id="doneMin">5분</div>
+    <p>설정한 시간이 다 됐어요.</p>
+    <button type="button" class="go" id="doneOk">확인</button>
+  </div>
+</div>
+<div id="start"><div class="pill">화면을 탭하면 시작해요<small>전체화면 · 화면 꺼짐 방지 · 버튼은 화면을 탭하면 다시 나타나요</small></div></div>
 <div id="status"></div>
 <video id="ns" muted playsinline loop preload="auto" src="data:video/mp4;base64,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aHJvbWFfbWU9MSB0cmVsbGlzPTAgOHg4ZGN0PTEgY3FtPTAgZGVhZHpvbmU9MjEsMTEgZmFzdF9wc2tpcD0xIGNocm9tYV9xcF9vZmZzZXQ9MCB0aHJlYWRzPTEgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTEga2V5aW50PTI1MCBrZXlpbnRfbWluPTEgc2NlbmVjdXQ9NDAgaW50cmFfcmVmcmVzaD0wIHJjX2xvb2thaGVhZD0xMCByYz1jcmYgbWJ0cmVlPTEgY3JmPTIzLjAgcWNvbXA9MC42MCBxcG1pbj0wIHFwbWF4PTY5IHFwc3RlcD00IGlwX3JhdGlvPTEuNDAgYXE9MToxLjAwAIAAAAASZYiEABb/7H/CVX/RApEebX/xARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBwEYIAcAAAAIQZohGIK//vABGCAHARggBwEYIAcBGCAHARggBwEYIAcBGCAHARggBw=="></video>
 <script>
 (function(){
-  /* ---------- 시·분 플립 카드 ---------- */
-  const cards = {h:document.getElementById('h'), m:document.getElementById('m')};
+  const body = document.body;
+  /* ---------- 플립 카드 ---------- */
+  const cards = {a:document.getElementById('h'), b:document.getElementById('m')};
   const state = {};
   function build(el){
     el.innerHTML =
       '<div class="half top st"><div class="num"></div></div>'+
       '<div class="half bot sb"><div class="num"></div></div>'+
       '<div class="half top flap ft"><div class="num"></div></div>'+
-      '<div class="half bot flap fb"><div class="num"></div></div>';
+      '<div class="half bot flap fb"><div class="num"></div></div>'+
+      '<div class="lab"></div>';
     return {st:el.querySelector('.st .num'), sb:el.querySelector('.sb .num'),
-            ft:el.querySelector('.ft .num'), fb:el.querySelector('.fb .num'), timer:0, val:null};
+            ft:el.querySelector('.ft .num'), fb:el.querySelector('.fb .num'),
+            lab:el.querySelector('.lab'), timer:0, val:null};
   }
   for (const k in cards) state[k] = build(cards[k]);
+  state.a.lab.textContent = '분'; state.b.lab.textContent = '초';
   function setCard(k, v){
     const c = state[k], el = cards[k];
     if (c.val === v) return;
@@ -194,13 +334,6 @@
     c.timer = setTimeout(()=>{ c.sb.textContent = v; el.classList.remove('flipping'); }, 600);
   }
   const p2 = n => String(n).padStart(2,'0');
-  function tick(){
-    const d = new Date();
-    setCard('h', p2(d.getHours()));
-    setCard('m', p2(d.getMinutes()));
-    setTimeout(tick, 1000 - d.getMilliseconds() + 5);
-  }
-  tick();
 
   /* ---------- 모래시계 (1분) ---------- */
   const SVGNS = 'http://www.w3.org/2000/svg';
@@ -275,18 +408,51 @@
     return peakY;
   }
 
+
+  const tRem = document.getElementById('tRem'), tTot = document.getElementById('tTot');
+  /* ---------- 타이머 상태 ---------- */
+  let mode = 'clock';
+  const T = {status:'idle', min:5, dur:5*60000, endAt:0, remain:5*60000, flipAt:0};
+  try{ const m = parseInt(localStorage.getItem('fc_lastMin')); if (m >= 1 && m <= 99){ T.min = m; T.dur = T.remain = m*60000; } }catch(e){}
+
+  function timerRemain(now){
+    if (T.status === 'running') return Math.max(0, T.endAt - now);
+    if (T.status === 'paused') return T.remain;
+    if (T.status === 'done') return 0;
+    return T.dur;
+  }
+
+  /* ---------- 화면 그리기 ---------- */
   function frame(){
-    const now = new Date();
-    const ms = now.getSeconds() * 1000 + now.getMilliseconds();
-    let angle = 0, r, flowing = false;
-    if (ms < TURN){ angle = 180 * ease(ms / TURN); r = 0; }
-    else if (ms < 1000){ r = 1; }
-    else { r = 1 - (ms - 1000) / DRAIN; flowing = true; }
+    const nowD = new Date(), now = nowD.getTime();
+    let angle = 0, r = 0, flowing = false, ms = 0;
+    if (mode === 'clock'){
+      setCard('a', p2(nowD.getHours()));
+      setCard('b', p2(nowD.getMinutes()));
+      ms = nowD.getSeconds()*1000 + nowD.getMilliseconds();
+      if (ms < TURN){ angle = 180 * ease(ms / TURN); r = 0; }
+      else if (ms < 1000){ r = 1; }
+      else { r = 1 - (ms - 1000) / DRAIN; flowing = true; }
+    } else {
+      const rem = timerRemain(now);
+      const sec = Math.ceil(rem / 1000);
+      const txt = p2(Math.floor(sec / 60)) + ':' + p2(sec % 60);
+      if (tRem.textContent !== txt) tRem.textContent = txt;
+      const tot = ' / ' + p2(Math.round(T.dur / 60000)) + ':00';
+      if (tTot.textContent !== tot) tTot.textContent = tot;
+      ms = now;
+      if (T.status === 'running'){
+        const ft = now - T.flipAt;
+        if (ft < TURN){ angle = 180 * ease(ft / TURN); r = 0; }
+        else { r = rem / T.dur; flowing = true; }
+      } else if (T.status === 'paused'){ r = T.remain / T.dur; }
+      else r = 0; // 대기·완료: 모래는 모두 아래에
+    }
     if (angle > 0) hg.setAttribute('transform', `rotate(${angle} 50 85)`);
     else hg.removeAttribute('transform');
-    const peak = drawSand(Math.max(0, Math.min(1, r)));
+    r = Math.max(0, Math.min(1, r));
+    const peak = drawSand(r);
     if (flowing && r > 0.004){
-      // 가늘게 떨어지는 모래 줄기 (살짝 흔들림)
       const w = Math.sin(ms / 90) * .12;
       stream.setAttribute('d', `M50,85 Q${50 + w},${(85 + peak) / 2} 50,${peak + .5}`);
       stream.setAttribute('stroke-dashoffset', -(ms / 40) % 2.7);
@@ -296,6 +462,152 @@
   }
   requestAnimationFrame(frame);
 
+  /* ---------- 버튼 표시/숨김 ---------- */
+  let calmTimer;
+  function wake(){
+    body.classList.remove('calm');
+    clearTimeout(calmTimer);
+    calmTimer = setTimeout(()=>{
+      if (!setupEl.hidden || !doneEl.hidden) return;
+      if (mode === 'timer' && T.status !== 'running') return;
+      body.classList.add('calm');
+    }, 5000);
+  }
+
+  /* ---------- 화면 전환 ---------- */
+  const setupEl = document.getElementById('setup'), doneEl = document.getElementById('done');
+  function setMode(m){
+    mode = m;
+    if (m === 'clock') for (const k in state) state[k].val = null;
+    body.classList.toggle('timer', m === 'timer');
+    if (m === 'timer' && T.status === 'idle') openSetup();
+    updateUI(); wake();
+  }
+  document.getElementById('toTimer').addEventListener('click', e=>{ e.stopPropagation(); setMode('timer'); });
+  document.getElementById('toClock').addEventListener('click', e=>{ e.stopPropagation(); setMode('clock'); });
+  document.getElementById('toSetup').addEventListener('click', e=>{ e.stopPropagation(); openSetup(); });
+
+  /* ---------- 설정 패널 ---------- */
+  const minIn = document.getElementById('minIn');
+  const presetBtns = [...document.querySelectorAll('#presets button')];
+  function markPreset(){
+    const v = parseInt(minIn.value);
+    presetBtns.forEach(b => b.classList.toggle('on', parseInt(b.dataset.m) === v));
+  }
+  function clampMin(v){ v = parseInt(v); if (!(v >= 1)) v = 1; if (v > 99) v = 99; return v; }
+  function openSetup(){ minIn.value = T.min; markPreset(); setupEl.hidden = false; wake(); }
+  function closeSetup(){ setupEl.hidden = true; wake(); }
+  presetBtns.forEach(b => b.addEventListener('click', ()=>{ minIn.value = b.dataset.m; markPreset(); }));
+  document.getElementById('minDown').addEventListener('click', ()=>{ minIn.value = clampMin(minIn.value) - 1 || 1; markPreset(); });
+  document.getElementById('minUp').addEventListener('click', ()=>{ minIn.value = Math.min(99, clampMin(minIn.value) + 1); markPreset(); });
+  minIn.addEventListener('input', markPreset);
+  minIn.addEventListener('change', ()=>{ minIn.value = clampMin(minIn.value); markPreset(); });
+  document.getElementById('setupClose').addEventListener('click', ()=>{
+    closeSetup();
+    if (T.status === 'idle' && mode === 'timer' && !T._seen) {} // 대기 화면 유지
+  });
+  setupEl.addEventListener('click', e=>{ if (e.target === setupEl) closeSetup(); });
+  document.getElementById('goBtn').addEventListener('click', ()=>{
+    const m = clampMin(minIn.value);
+    T.min = m; T.dur = m * 60000;
+    try{ localStorage.setItem('fc_lastMin', m); }catch(e){}
+    closeSetup();
+    startTimer();
+  });
+
+  /* ---------- 타이머 동작 ---------- */
+  function startTimer(){
+    unlockAudio();
+    const now = Date.now();
+    T.status = 'running'; T.flipAt = now; T.endAt = now + T.dur; T.remain = T.dur;
+    updateUI(); wake(); keepAwake();
+  }
+  function pauseTimer(){ T.remain = Math.max(0, T.endAt - Date.now()); T.status = 'paused'; updateUI(); wake(); }
+  function resumeTimer(){ const now = Date.now(); T.endAt = now + T.remain; T.flipAt = 0; T.status = 'running'; updateUI(); wake(); }
+  function resetTimer(){ T.status = 'idle'; T.remain = T.dur; stopAlarm(); updateUI(); wake(); }
+
+  document.getElementById('playBtn').addEventListener('click', e=>{
+    e.stopPropagation(); unlockAudio();
+    if (T.status === 'running') pauseTimer();
+    else if (T.status === 'paused') resumeTimer();
+    else startTimer();
+  });
+  document.getElementById('resetBtn').addEventListener('click', e=>{ e.stopPropagation(); resetTimer(); });
+
+  const playTxt = document.getElementById('playTxt'), icoPlay = document.getElementById('icoPlay'), icoPause = document.getElementById('icoPause');
+  const toTimerTxt = document.getElementById('toTimerTxt');
+  function updateUI(){
+    const running = T.status === 'running';
+    playTxt.textContent = running ? '일시정지' : (T.status === 'paused' ? '계속' : '시작');
+    icoPlay.style.display = running ? 'none' : ''; icoPause.style.display = running ? '' : 'none';
+    body.classList.toggle('paused', T.status === 'paused');
+    updatePill();
+  }
+  function updatePill(){
+    if (T.status === 'running' || T.status === 'paused'){
+      const sec = Math.ceil(timerRemain(Date.now()) / 1000);
+      toTimerTxt.textContent = p2(Math.floor(sec/60)) + ':' + p2(sec%60) + (T.status === 'paused' ? ' 일시정지' : '');
+    } else toTimerTxt.textContent = '타이머';
+  }
+
+  // 화면이 꺼져 있거나 다른 화면이어도 정확히 끝나도록 별도 확인
+  setInterval(()=>{
+    if (T.status === 'running' && Date.now() >= T.endAt){
+      T.status = 'done'; T.remain = 0;
+      updateUI(); ring();
+    }
+    if (mode === 'clock') updatePill();
+  }, 200);
+
+  /* ---------- 알림음 ---------- */
+  let actx = null, ringTimer = 0, ringStop = 0;
+  function unlockAudio(){
+    try{
+      if (!actx){ const AC = window.AudioContext || window.webkitAudioContext; if (AC) actx = new AC(); }
+      if (actx && actx.state === 'suspended') actx.resume();
+      if (actx){ const o = actx.createOscillator(), g = actx.createGain(); g.gain.value = 0; o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + .02); }
+    }catch(e){}
+  }
+  function chime(){
+    if (!actx) return;
+    const t0 = actx.currentTime;
+    [0, .18, .36].forEach((d, i)=>{
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = i === 2 ? 1318.5 : 1046.5;
+      g.gain.setValueAtTime(0, t0 + d);
+      g.gain.linearRampToValueAtTime(.35, t0 + d + .015);
+      g.gain.exponentialRampToValueAtTime(.001, t0 + d + .45);
+      o.connect(g); g.connect(actx.destination);
+      o.start(t0 + d); o.stop(t0 + d + .5);
+    });
+  }
+  function ring(){
+    document.getElementById('doneMin').textContent = T.min + '분';
+    doneEl.hidden = false; setupEl.hidden = true;
+    body.classList.add('ringing'); wake();
+    if (actx && actx.state === 'suspended') actx.resume();
+    chime();
+    try{ navigator.vibrate && navigator.vibrate([400,200,400,200,800]); }catch(e){}
+    clearInterval(ringTimer);
+    ringStop = Date.now() + 60000;  // 최대 1분 동안 반복
+    ringTimer = setInterval(()=>{
+      if (Date.now() > ringStop){ stopAlarm(); return; }
+      chime();
+      try{ navigator.vibrate && navigator.vibrate([400,200,400]); }catch(e){}
+    }, 1600);
+  }
+  function stopAlarm(){
+    clearInterval(ringTimer); ringTimer = 0;
+    body.classList.remove('ringing');
+    try{ navigator.vibrate && navigator.vibrate(0); }catch(e){}
+  }
+  document.getElementById('doneOk').addEventListener('click', e=>{
+    e.stopPropagation();
+    stopAlarm(); doneEl.hidden = true;
+    T.status = 'idle'; T.remain = T.dur;
+    if (mode !== 'timer') setMode('timer'); else { updateUI(); wake(); }
+  });
+
   /* ---------- 화면 꺼짐 방지 ---------- */
   const statusEl = document.getElementById('status');
   let statusTimer;
@@ -303,7 +615,7 @@
     statusEl.textContent = msg; statusEl.classList.add('show');
     clearTimeout(statusTimer); statusTimer = setTimeout(()=>statusEl.classList.remove('show'), 3500);
   }
-  let lock = null, wanted = false;
+  let lock = null, wanted = false, lastOk = null;
   const video = document.getElementById('ns');
   async function keepAwake(){
     let ok = false, why = '';
@@ -318,7 +630,8 @@
       }catch(e){ why = (e && e.name ? e.name : '') + ' — 꺼짐 방지가 거부됨'; }
     }
     if (!ok){ try{ await video.play(); }catch(e){} }
-    status(ok ? '화면 꺼짐 방지 켜짐' : why);
+    if (ok !== lastOk || !ok) status(ok ? '화면 꺼짐 방지 켜짐' : why);
+    lastOk = ok;
     return ok;
   }
   async function goFull(){
@@ -331,14 +644,16 @@
     }catch(e){}
   }
   const startEl = document.getElementById('start');
-  startEl.addEventListener('click', ()=>{ wanted = true; startEl.classList.add('hide'); goFull(); keepAwake(); });
-  document.getElementById('clock').addEventListener('click', ()=>{ if (wanted){ goFull(); keepAwake(); } });
+  startEl.addEventListener('click', ()=>{ wanted = true; startEl.classList.add('hide'); goFull(); keepAwake(); unlockAudio(); wake(); });
+  document.getElementById('clock').addEventListener('click', ()=>{ wake(); if (wanted){ goFull(); keepAwake(); } });
+  document.addEventListener('pointerdown', wake, true);
   document.addEventListener('visibilitychange', ()=>{
     if (document.visibilityState === 'visible'){
       if (wanted) keepAwake();
       for (const k in state) state[k].val = null;
     }
   });
+  updateUI();
 })();
 </script>
 </body>
