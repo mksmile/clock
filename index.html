@@ -452,24 +452,35 @@
     fxOn = false; falls.length = splashes.length = slides.length = rolls.length = 0;
     fxEl.fx.style.display = 'none';
   }
+  // 타이머 길이에 따른 흐름 세기: 3분=1(굵고 빠르게) … 60분≈0.15(가늘게 졸졸)
+  let Q = 1;
+  function setFlow(min){
+    const k = (Math.log(min) - Math.log(3)) / (Math.log(60) - Math.log(3));
+    Q = Math.max(.12, Math.min(1, 1 - k * .85));
+    fxEl.fxFall.setAttribute('stroke-width', (.28 + .2 * Q).toFixed(2));
+    fxEl.fxFall2.setAttribute('stroke-width', (.24 + .16 * Q).toFixed(2));
+    fxEl.fxCore.setAttribute('opacity', (.25 + .45 * Q).toFixed(2));
+  }
   function updateFx(now, peak){
     if (!fxOn){ fxOn = true; fxLast = now; fxEl.fx.style.display = ''; }
     const dt = Math.min(.05, (now - fxLast) / 1000); fxLast = now;
     const land = peak + .3;
 
     // 1) 목에서 떨어지는 알갱이: 아래로 갈수록 빨라짐
-    let n = Math.random() < .5 ? 2 : 3;
-    for (let i = 0; i < n; i++) falls.push({x: 50 + rnd(-.3, .3), y: 86 + rnd(0, 1.5), vx: rnd(-.6, .6), vy: rnd(10, 30), c: Math.random() < .65});
+    const ex = .35 + Q * 3.2;                               // 프레임당 평균 알갱이 수
+    let n = Math.floor(ex) + (Math.random() < ex % 1 ? 1 : 0);
+    const sp = .1 + .25 * Q;
+    for (let i = 0; i < n; i++) falls.push({x: 50 + rnd(-sp, sp), y: 86 + rnd(0, 1.5), vx: rnd(-.6, .6) * Q, vy: rnd(10, 30), c: Math.random() < .65});
     let a = '', b = '';
     for (let i = falls.length - 1; i >= 0; i--){
       const g = falls[i];
       g.vy += G * dt; g.y += g.vy * dt; g.x += g.vx * dt;
       if (g.y >= land){
-        if (Math.random() < .35){
+        if (Math.random() < .12 + .3 * Q){
           const dir = Math.random() < .5 ? -1 : 1;
-          splashes.push({x: g.x, y: land - .2, vx: dir * rnd(6, 22), vy: -rnd(8, 26), life: rnd(.15, .32)});
+          splashes.push({x: g.x, y: land - .2, vx: dir * rnd(5, 22) * (.5 + .5 * Q), vy: -rnd(6, 26) * (.5 + .5 * Q), life: rnd(.15, .32)});
         }
-        if (Math.random() < .18) spawnRoll();
+        if (Math.random() < .06 + .14 * Q) spawnRoll();
         falls.splice(i, 1); continue;
       }
       const len = Math.min(3.2, g.vy * .016);          // 속도만큼 늘어나는 잔상
@@ -491,9 +502,9 @@
 
     // 3) 위쪽: 깔때기 경사를 따라 가운데로 미끄러져 들어가는 알갱이
     const topY = SURF.topY, holeY = topY + SURF.dip, wt = halfW(topY + .5) * .92;
-    if (wt > 1.5 && slides.length < 26 && Math.random() < .55){
+    if (wt > 1.5 && slides.length < 26 && Math.random() < .12 + .45 * Q){
       const side = Math.random() < .5 ? -1 : 1;
-      slides.push({side, p: 0, from: rnd(.25, 1), spd: rnd(.35, .9), c: Math.random() < .6});
+      slides.push({side, p: 0, from: rnd(.25, 1), spd: rnd(.35, .9) * (.45 + .55 * Q), c: Math.random() < .6});
     }
     let t1 = '', t2 = '';
     for (let i = slides.length - 1; i >= 0; i--){
@@ -509,12 +520,12 @@
     fxEl.fxSlide.setAttribute('d', t1); fxEl.fxSlide2.setAttribute('d', t2);
     // 깔때기 구멍 (모래가 빨려 들어가는 곳)
     if (wt > 1.5){
-      const hw = .9 + Math.sin(now / 70) * .15;
+      const hw = .45 + .5 * Q + Math.sin(now / 70) * .12;
       fxEl.fxHole.setAttribute('d', `M${50 - hw},${holeY - .1} Q50,${holeY + .9} ${50 + hw},${holeY - .1} Q50,${holeY + .3} ${50 - hw},${holeY - .1}Z`);
     } else fxEl.fxHole.setAttribute('d', '');
 
     // 4) 아래쪽: 봉우리에서 경사를 따라 굴러 내려가는 알갱이
-    if (Math.random() < .25) spawnRoll();
+    if (Math.random() < .05 + .2 * Q) spawnRoll();
     let r1 = '', r2s = '';
     const k = SURF.k, by = SURF.botY;
     const wb = halfW(by + k * .3) * .9;
@@ -532,8 +543,8 @@
     // 5) 가는 모래 줄기 (알갱이 사이의 연속된 흐름)
     const jit = Math.sin(now / 37) * .08 + Math.sin(now / 13) * .05;
     fxEl.fxCore.setAttribute('d', `M50,85.5 Q${50 + jit},${(85 + land) / 2} ${50 + jit * .5},${land}`);
-    fxEl.fxCore.setAttribute('stroke-width', (.22 + Math.random() * .12).toFixed(2));
-    fxEl.fxNeck.setAttribute('r', (.65 + Math.random() * .2).toFixed(2));
+    fxEl.fxCore.setAttribute('stroke-width', (.1 + .14 * Q + Math.random() * .1 * Q).toFixed(2));
+    fxEl.fxNeck.setAttribute('r', (.4 + .3 * Q + Math.random() * .2 * Q).toFixed(2));
   }
   function spawnRoll(){
     if (rolls.length > 22 || SURF.k < 1.5) return;
@@ -639,6 +650,7 @@
   function startTimer(){
     unlockAudio();
     const now = Date.now();
+    setFlow(T.min);
     T.status = 'running'; T.flipAt = now; T.endAt = now + T.dur; T.remain = T.dur;
     updateUI(); wake(); keepAwake();
   }
