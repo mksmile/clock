@@ -82,6 +82,11 @@
   /* 카드 라벨 (타이머 화면) */
   .lab{position:absolute;z-index:8;left:4.5cqw;bottom:4cqh;font:600 max(12px,4.5cqh) system-ui,-apple-system,'Apple SD Gothic Neo',sans-serif;
     color:rgba(243,239,230,.38);display:none}
+  /* ---------- 시계 화면: 시·분 두 장 + 분 카드 아래 차오르는 선 ---------- */
+  body:not(.timer) #g{display:none}
+  .secbar{position:absolute;z-index:7;left:6cqw;right:6cqw;bottom:max(8px,4.5cqh);height:max(3px,1.1cqh);
+    border-radius:99px;background:rgba(243,239,230,.07);overflow:hidden;pointer-events:none}
+  .secfill{height:100%;width:0;border-radius:inherit;background:var(--sand)}
   /* ---------- 타이머 화면: 모래시계 크게, 시간은 작게 ---------- */
   body.timer #h, body.timer #m{display:none}
   body.timer .clock{flex-direction:column;gap:6px;
@@ -332,7 +337,10 @@
             lab:el.querySelector('.lab'), timer:0, val:null};
   }
   for (const k in cards) state[k] = build(cards[k]);
-  state.a.lab.textContent = '분'; state.b.lab.textContent = '초';
+  const secBar = document.createElement('div'); secBar.className = 'secbar';
+  secBar.innerHTML = '<div class="secfill"></div>';
+  cards.b.appendChild(secBar);
+  const secFill = secBar.firstChild;
   function setCard(k, v){
     const c = state[k], el = cards[k];
     if (c.val === v) return;
@@ -559,9 +567,13 @@
       setCard('a', p2(nowD.getHours()));
       setCard('b', p2(nowD.getMinutes()));
       ms = nowD.getSeconds()*1000 + nowD.getMilliseconds();
-      if (ms < TURN){ angle = 180 * ease(ms / TURN); r = 0; }
-      else if (ms < 1000){ r = 1; }
-      else { r = 1 - (ms - 1000) / DRAIN; flowing = true; }
+      // 초 표시: 분 카드 아래 가는 선이 1분 동안 차오름 (정각엔 꽉 찬 선이 사르르 사라진 뒤 다시 시작)
+      const FADE = 600;
+      if (ms < FADE){ secFill.style.width = '100%'; secFill.style.opacity = (1 - ms / FADE).toFixed(3); }
+      else { secFill.style.width = ((ms - FADE) / (60000 - FADE) * 100).toFixed(3) + '%'; secFill.style.opacity = '1'; }
+      clearFx(); hg.removeAttribute('transform');
+      requestAnimationFrame(frame);
+      return;
     } else {
       const rem = timerRemain(now);
       const sec = Math.ceil(rem / 1000);
